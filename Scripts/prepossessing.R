@@ -143,13 +143,13 @@ for (loja in lojas) {
   }
   
   #Medias movel preco
-  qtd_dias_media_movel_preco <- c(30, 60, 120)
+  qtd_dias_media_movel_preco <- c(30)
   for (i in qtd_dias_media_movel_preco) {
     dataset[, paste0("media_movel_", qtd_dias_media_movel_preco, "_dias_preco") := frollmean(sell_price, qtd_dias_media_movel_preco),
             by = c("item_id")]
   }
   
-  dataset[, c("wm_yr_wk", "state_id", "id", "d") := NULL]
+  dataset[, c("wm_yr_wk", "id", "d") := NULL]
   
   
   arrow::write_parquet(dataset, paste0("~/projetos/Wallmart/dados_de_treinamento/data_processada_", loja, ".parquet"))

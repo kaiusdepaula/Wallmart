@@ -14,7 +14,7 @@ param <- list(boosting_type = "gbdt",
               min_data_in_leaf = 2**8-1,
               feature_fraction = 0.5,
               max_bin = 100,
-              n_estimators = 300,
+              n_estimators = 200,
               boost_from_average = FALSE,
               verbose = -1,
               seed = 1995)
@@ -41,7 +41,7 @@ for (loja in lojas) {
     print(paste0("Treinando o modelo da loja ", loja, " durante ", cv[1], " (treino) ", cv[2], " (validação)"))
     #Leitura dos dados
     dataset <- as.data.table(arrow::read_parquet(paste0("~/projetos/Wallmart/dados_de_treinamento/data_processada_", loja, ".parquet")))
-
+    
     #Retirando o periodo usado para prever
     dataset <- dataset[dia <= cv[[2]]]
     
@@ -56,27 +56,27 @@ for (loja in lojas) {
     
     #Colunas que vão sair do escopo de treinamento 
     xFEAT <- setdiff(names(dataset), c(
-      "date", "sales", "ordenador"
+      "date", "sales", "ordenador", "state_id"
     ))
     
     #Treinamento
-    dt_train <- dataset[dia < cv[[1]]]
-
+    dt_train <- dataset[dia <= cv[[1]]]
+    
     dt_trainMT = as.matrix(dt_train[,lapply(.SD, as.numeric),.SDcols = xFEAT])
     dt_trainDM = lgb.Dataset(dt_trainMT, label = log1p(dt_train[["sales"]]))
-
+    
     #Validação
-    dt_valid <- dataset[dia >= cv[[1]] & dia <= cv[[2]]]
-
+    dt_valid <- dataset[dia > cv[[1]] & dia <= cv[[2]]]
+    
     dt_validMT = as.matrix(dt_valid[,lapply(.SD, as.numeric),.SDcols = xFEAT])
     dt_validDM = list(test = lgb.Dataset.create.valid(dt_trainDM, dt_validMT, label = log1p(dt_valid[["sales"]])))
-
+    
     # fit model
     model <- lgb.train(params = param, data = dt_trainDM, valid=dt_validDM)
     
     scores_cv <- rbind(scores_cv, model$best_score)
   }
-
+  
   lgb.save(model, paste0("Modelo_teste_cv", loja, ".txt"))
   scores[, paste0(loja) := scores_cv]
 }

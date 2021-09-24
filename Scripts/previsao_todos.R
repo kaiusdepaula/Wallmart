@@ -1,9 +1,10 @@
 library(data.table)
 library(lightgbm)
-
+       
 lojas <- c("CA_1", "CA_2", "CA_3", "CA_4", "TX_1", "TX_2", "TX_3", "WI_1", 
            "WI_2", "WI_3")
 
+setwd("~/projetos/Wallmart/modelos")
 #Prevendo public scoreboard
 
 for (loja in lojas) {
@@ -24,7 +25,7 @@ for (loja in lojas) {
   
   #Colunas que vão sair do escopo de previsão
   xFEAT <- setdiff(names(dataset), c(
-    "date", "sales", "ordenador"
+    "date", "sales", "ordenador", "state_id"
   ))
   
   #Matriz de preditores
@@ -34,7 +35,7 @@ for (loja in lojas) {
   model <- lgb.load(paste0("Modelo_teste_cv", loja, ".txt"))
   
   #Gerando mecanismo que salva as informações
-  chaves_sales <- c("date", "item_id", "store_id", "ordenador")
+  chaves_sales <- c("date", "dia", "item_id", "store_id", "ordenador", "dept_id", "state_id", "cat_id")
   pred <- dataset[, ..chaves_sales]
   
   #Gerando previsões
@@ -70,7 +71,7 @@ for (loja in lojas) {
   
   #Colunas que vão sair do escopo de previsão
   xFEAT <- setdiff(names(dataset), c(
-    "date", "sales", "ordenador"
+    "date", "sales", "ordenador", "state_id"
   ))
   
   #Matriz de preditores
@@ -80,7 +81,7 @@ for (loja in lojas) {
   model <- lgb.load(paste0("Modelo_teste_cv", loja, ".txt"))
   
   #Gerando mecanismo que salva as informações
-  chaves_sales <- c("date", "item_id", "store_id", "ordenador")
+  chaves_sales <- c("date", "dia", "item_id", "store_id", "ordenador", "dept_id", "state_id", "cat_id")
   pred <- dataset[, ..chaves_sales]
   
   #Gerando previsões
@@ -107,6 +108,7 @@ for (loja in lojas) {
   empilhado <- rbind(empilhado, pred)
   rm(pred)
 }
+
 
 empilhado[, predicao := expm1(predicao)]
 empilhado[, item_id := paste0(item_id, "_", store_id, "_validation")]
@@ -221,4 +223,3 @@ dataset[, ordenador := NULL]
 submission <- rbind(submission, dataset)
 
 fwrite(submission, file = "~/projetos/Wallmart/submission.csv")
-
