@@ -406,20 +406,18 @@ weights <- data3[, revenue / sum(revenue)]
 
 WRMSSE_9 <- sum((1/12) * RMSSE * weights)
 
-######################### A partir daqui se torna inviável sem otimizar
-
 #Nível 10
 #Retorno de 3049 valores por dia - item_id
 RMSSE <- c()
-for (item in unique(dt_valid$item_id)) {
-  data <- dt_train[, .(sales, dia, item_id)]
-  data <- data[item_id == item]
-  
-  data2 <- dt_valid[, .(sales, preds, dia, item_id)]
-  data2 <- data2[item_id == item]
+data <- dt_train[, .(sales, dia, item_id)]
+data2 <- dt_valid[, .(sales, preds, dia, item_id)]
 
-  RMSE_future <- ModelMetrics::rmse(data2$sales, data2$preds) #Numerador
-  RMSE_historical <- data[, sqrt(mean((diff(sales) ** 2), na.rm = TRUE))] #Denominador
+for (item in unique(dt_valid$item_id)) {
+  temp1 <- data[item_id == item]
+  temp2 <- data2[item_id == item]
+
+  RMSE_future <- ModelMetrics::rmse(temp2$sales, temp2$preds) #Numerador
+  RMSE_historical <- temp1[, sqrt(mean((diff(sales) ** 2), na.rm = TRUE))] #Denominador
   RMSSE <- rbind(RMSSE, RMSE_future / RMSE_historical)
 }
 
@@ -438,20 +436,21 @@ WRMSSE_10 <- sum((1/12) * RMSSE * weights)
 #Nível 11
 #Retorno de 9147 valores por dia - item_id, state
 RMSSE <- c()
+data <- dt_train[, .(sales, dia, item_id, state_id)]
+data2 <- dt_valid[, .(sales, preds, dia, item_id, state_id)]
+contador <- 9147L
 for (state in unique(dt_valid$state_id)) {
   for (item in unique(dt_valid$item_id)) {
-    data <- dt_train[, .(sales, dia, item_id, state_id)]
-    data <- data[item_id == item & state_id == state]
+    temp1 <- data[item_id == item & state_id == state]
+    temp2 <- data2[item_id == item & state_id == state]
     
-    data2 <- dt_valid[, .(sales, preds, dia, item_id, state_id)]
-    data2 <- data2[item_id == item & state_id == state]
-    
-    RMSE_future <- ModelMetrics::rmse(data2$sales, data2$preds) #Numerador
-    RMSE_historical <- data[, sqrt(mean((diff(sales) ** 2), na.rm = TRUE))] #Denominador
+    RMSE_future <- ModelMetrics::rmse(temp2$sales, temp2$preds) #Numerador
+    RMSE_historical <- temp1[, sqrt(mean((diff(sales) ** 2), na.rm = TRUE))] #Denominador
     RMSSE <- rbind(RMSSE, RMSE_future / RMSE_historical)
+    contador = contador - 1
+    print(contador)
   }
 }
-
 
 #weights
 data3 <- dt_valid[
@@ -468,17 +467,19 @@ WRMSSE_11 <- sum((1/12) * RMSSE * weights)
 #Nível 12
 #Retorno de 30490 valores por dia - item_id, store
 RMSSE <- c()
+data <- dt_train[, .(sales, dia, item_id, store_id)]
+data2 <- dt_valid[, .(sales, preds, dia, item_id, store_id)]
+contador <- 30490
 for (store in unique(dt_valid$store_id)) {
   for (item in unique(dt_valid$item_id)) {
-    data <- dt_train[, .(sales, dia, item_id, store_id)]
-    data <- data[item_id == item & store_id == store]
+    temp1 <- data[item_id == item & store_id == store]
+    temp2 <- data2[item_id == item & store_id == store]
     
-    data2 <- dt_valid[, .(sales, preds, dia, item_id, store_id)]
-    data2 <- data2[item_id == item & store_id == store]
-    
-    RMSE_future <- ModelMetrics::rmse(data2$sales, data2$preds) #Numerador
-    RMSE_historical <- data[, sqrt(mean((diff(sales) ** 2), na.rm = TRUE))] #Denominador
+    RMSE_future <- ModelMetrics::rmse(temp2$sales, temp2$preds) #Numerador
+    RMSE_historical <- temp1[, sqrt(mean((diff(sales) ** 2), na.rm = TRUE))] #Denominador
     RMSSE <- rbind(RMSSE, RMSE_future / RMSE_historical)
+    contador = contador - 1
+    print(contador)
   }
 }
 
