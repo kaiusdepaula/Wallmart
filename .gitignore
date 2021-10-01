@@ -1,8 +1,4 @@
-dados_de_treinamento/data_processada*
-modelos/Modelo_teste*
-previsao/data_prevista_eval*
-previsao/data_prevista_valid*
-Scores_CV/*
-submission.csv
-Data/*
+*.parquet
+*.txt
+*.csv
 modelos/.Rhistory
